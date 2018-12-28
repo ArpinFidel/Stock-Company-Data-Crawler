@@ -65,19 +65,28 @@ def get_company_data():
 	companies = list()
 
 	time.sleep(5)
-
+	
+	tableTriesLimit = 20
+	rowTriesLimit = 10
+	nextTriesLimit = 20
+	
 
 	for i in range(7):
+		
+		print('on page %d' % (i+1))
+		print('retrieved %d data'  % (len(companies)))
+		
+		tableTries = 0
 		while True:
 			while  True:
+				tableTries = tableTries + 1
+				if tableTries > tableTriesLimit: raise RuntimeError('get table timeout')
 				try:
 					table = browser.find_element(By.ID, 'stockTable').find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
 					rowNum = int(table[0].find_elements(By.TAG_NAME, 'td')[0].get_attribute('innerHTML'))
-					# print('table html:', table[0].get_attribute('innerHTML'))
-					# print('rownum:', rowNum)
 				except Exception as e:
-					# print(e)
-					# print('Failed getting table. Retrying...')
+					print(e)
+					print('Failed getting table. Retrying...')
 					continue
 				break
 				
@@ -87,26 +96,27 @@ def get_company_data():
 				time.sleep(0.5)
 		
 		for row in table:
+			rowTries = 0
 			while True:
+				rowTries = rowTries + 1
+				if rowTries > rowTriesLimit: raise RuntimeError('get row timeout')
 				try:
-					# print('row html:', row.get_attribute('innerHTML'))
 					data = row.find_elements(By.TAG_NAME, 'td')
-					# print('data: ', data[1].get_attribute('innerHTML'))
 				except Exception as e:
-					# print(e)
-					# print('Failed getting row. Retrying...')
+					print(e)
+					print('Failed getting row. Retrying...')
 					continue
 				break
 			companies.append(Company(data))
 		
-		# print('\nLoaded %d data\n' % (len(companies)))
-		
+		nextTries = 0
 		while True:
+			if nextTries > nextTriesLimit: raise RuntimeError('get next button timeout')
 			try:
 				buttonNext.click()
 			except Exception as e:
-				# print(e)
-				# print('Failled moving to next page. Retrying...')
+				print(e)
+				print('Failled moving to next page. Retrying...')
 				buttonNext = browser.find_element(By.ID, 'stockTable_next')
 				time.sleep(0.5)
 				continue
