@@ -14,8 +14,7 @@ class Company:
 		self.board = data[5].get_attribute('innerHTML')
 		
 		
-def get_company_data():
-	runPath = os.path.dirname(os.path.abspath(__file__))
+def get_company_data(browserPath):
 
 	op = webdriver.ChromeOptions()
 	prefs = {	'profile.default_content_setting_values': {
@@ -60,7 +59,7 @@ def get_company_data():
 	
 	url = 'https://www.idx.co.id/data-pasar/data-saham/daftar-saham/'
 
-	browser = webdriver.Chrome(runPath+'\\lib\\chromedriver.exe',options=op, service_args=args)
+	browser = webdriver.Chrome(browserPath, options=op, service_args=args)
 
 	browser.implicitly_wait(20)
 
@@ -137,7 +136,10 @@ if __name__ == '__main__':
 	try:
 		print('Loading data from https://www.idx.co.id/data-pasar/data-saham/daftar-saham/')
 		
-		companies = get_company_data()
+		runPath = os.path.dirname(os.path.abspath(__file__))
+		browserPath = runPath+'\\lib\\chromedriver.exe'
+		
+		companies = get_company_data(browserPath)
 
 		outputFile = open('companies.txt','w+')
 		for c in companies:
