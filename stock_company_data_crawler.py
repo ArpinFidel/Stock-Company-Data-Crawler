@@ -7,11 +7,11 @@ import time
 
 class Company:
 	def __init__(self, data):
-		self.code = data[1].get_attribute('innerHTML')
-		self.name = data[2].get_attribute('innerHTML')
-		self.recDate = data[3].get_attribute('innerHTML')
-		self.stock = data[4].get_attribute('innerHTML')
-		self.board = data[5].get_attribute('innerHTML')
+		self.code = data[0]
+		self.name = data[1]
+		self.recDate = data[2]
+		self.stock = data[3]
+		self.board = data[4]
 		
 		
 def get_company_data(browserPath):
@@ -108,7 +108,7 @@ def get_company_data(browserPath):
 				rowTries = rowTries + 1
 				if rowTries > rowTriesLimit: raise RuntimeError('get row timeout')
 				try:
-					data = row.find_elements(By.TAG_NAME, 'td')
+					data = [r.get_attribute('innerHTML') for r in row.find_elements(By.TAG_NAME, 'td')[1:]]
 				except Exception as e:
 					print(e)
 					print('Failed getting row. Retrying...')
