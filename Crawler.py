@@ -14,107 +14,118 @@ class Company:
 		self.board = data[5].get_attribute('innerHTML')
 		
 		
+def get_company_data():
+	runPath = os.path.dirname(os.path.abspath(__file__))
 
-runPath = os.path.dirname(os.path.abspath(__file__))
+	op = webdriver.ChromeOptions()
+	prefs = {	'profile.default_content_setting_values': {
+					'cookies': 2,
+					'images': 2,
+					'plugins': 2,
+					'popups': 2,
+					'geolocation': 2, 
+					'notifications': 2,
+					'auto_select_certificate': 2,
+					'fullscreen': 2, 
+					'mouselock': 2,
+					'mixed_script': 2,
+					'media_stream': 2, 
+					'media_stream_mic': 2,
+					'media_stream_camera': 2,
+					'protocol_handlers': 2, 
+					'ppapi_broker': 2,
+					'automatic_downloads': 2,
+					'midi_sysex': 2, 
+					'push_messaging': 2,
+					'ssl_cert_decisions': 2,
+					'metro_switch_to_desktop': 2, 
+					'protected_media_identifier': 2,
+					'app_banner': 2,
+					'site_engagement': 2, 
+					'durable_storage': 2},
+				'disk-cache-size': 4096}
 
-op = webdriver.ChromeOptions()
-prefs = {	'profile.default_content_setting_values': {
-				'cookies': 2,
-				'images': 2,
-				'plugins': 2,
-				'popups': 2,
-				'geolocation': 2, 
-				'notifications': 2,
-				'auto_select_certificate': 2,
-				'fullscreen': 2, 
-				'mouselock': 2,
-				'mixed_script': 2,
-				'media_stream': 2, 
-				'media_stream_mic': 2,
-				'media_stream_camera': 2,
-				'protocol_handlers': 2, 
-				'ppapi_broker': 2,
-				'automatic_downloads': 2,
-				'midi_sysex': 2, 
-				'push_messaging': 2,
-				'ssl_cert_decisions': 2,
-				'metro_switch_to_desktop': 2, 
-				'protected_media_identifier': 2,
-				'app_banner': 2,
-				'site_engagement': 2, 
-				'durable_storage': 2},
-			'disk-cache-size': 4096}
+	op.add_experimental_option("prefs", prefs)
 
-op.add_experimental_option("prefs", prefs)
+	op.add_argument('headless')
+	op.add_argument("--disable-notifications");
 
-op.add_argument('headless')
-op.add_argument("--disable-notifications");
+	url = 'https://www.idx.co.id/data-pasar/data-saham/daftar-saham/'
 
-url = 'https://www.idx.co.id/data-pasar/data-saham/daftar-saham/'
+	browser = webdriver.Chrome(runPath+'\\lib\\chromedriver.exe',options=op)
 
-browser = webdriver.Chrome(runPath+'\\lib\\chromedriver.exe',options=op)
+	browser.implicitly_wait(20)
 
-browser.implicitly_wait(20)
+	browser.get(url)
 
-browser.get(url)
+	buttonNext = browser.find_element(By.ID, 'stockTable_next')
 
-buttonNext = browser.find_element(By.ID, 'stockTable_next')
+	Select(browser.find_element(By.NAME, 'stockTable_length')).select_by_value('100')
 
-Select(browser.find_element(By.NAME, 'stockTable_length')).select_by_value('100')
+	companies = list()
 
-companies = list()
+	time.sleep(5)
 
-time.sleep(5)
 
-print('Loading data...')
-
-for i in range(7):
-	while True:
-		while  True:
-			try:
-				table = browser.find_element(By.ID, 'stockTable').find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
-				rowNum = int(table[0].find_elements(By.TAG_NAME, 'td')[0].get_attribute('innerHTML'))
-				# print('table html:', table[0].get_attribute('innerHTML'))
-				# print('rownum:', rowNum)
-			except Exception as e:
-				print(e)
-				print('Failed getting table. Retrying...')
-				continue
-			break
-			
-		if rowNum == i*100+1:
-			break
-		else:
-			time.sleep(0.5)
-	
-	for row in table:
+	for i in range(7):
+		while True:
+			while  True:
+				try:
+					table = browser.find_element(By.ID, 'stockTable').find_element(By.TAG_NAME, 'tbody').find_elements(By.TAG_NAME, 'tr')
+					rowNum = int(table[0].find_elements(By.TAG_NAME, 'td')[0].get_attribute('innerHTML'))
+					# print('table html:', table[0].get_attribute('innerHTML'))
+					# print('rownum:', rowNum)
+				except Exception as e:
+					# print(e)
+					# print('Failed getting table. Retrying...')
+					continue
+				break
+				
+			if rowNum == i*100+1:
+				break
+			else:
+				time.sleep(0.5)
+		
+		for row in table:
+			while True:
+				try:
+					# print('row html:', row.get_attribute('innerHTML'))
+					data = row.find_elements(By.TAG_NAME, 'td')
+					# print('data: ', data[1].get_attribute('innerHTML'))
+				except Exception as e:
+					# print(e)
+					# print('Failed getting row. Retrying...')
+					continue
+				break
+			companies.append(Company(data))
+		
+		# print('\nLoaded %d data\n' % (len(companies)))
+		
 		while True:
 			try:
-				# print('row html:', row.get_attribute('innerHTML'))
-				data = row.find_elements(By.TAG_NAME, 'td')
-				# print('data: ', data[1].get_attribute('innerHTML'))
+				buttonNext.click()
 			except Exception as e:
-				print(e)
-				print('Failed getting row. Retrying...')
+				# print(e)
+				# print('Failled moving to next page. Retrying...')
+				buttonNext = browser.find_element(By.ID, 'stockTable_next')
+				time.sleep(0.5)
 				continue
 			break
-		companies.append(Company(data))
 	
-	print('\nLoaded %d data\n' % (len(companies)))
-	
-	while True:
-		try:
-			buttonNext.click()
-		except Exception as e:
-			print(e)
-			print('Failled moving to next page. Retrying...')
-			buttonNext = browser.find_element(By.ID, 'stockTable_next')
-			time.sleep(0.5)
-			continue
-		break
-	
-for c in companies:
-	print('%s^%s^%s^%s^%s' % (c.code, c.name, c.recDate, c.stock, c.board))
-	
-browser.quit()
-input('Press enter to quit')
+	browser.quit()
+	return companies
+			
+if __name__ == '__main__':
+	print('Loading data from https://www.idx.co.id/data-pasar/data-saham/daftar-saham/')
+
+	companies = get_company_data()
+
+	outputFile = open('companies.txt','w+')
+	for c in companies:
+		print('%s^%s^%s^%s^%s' % (c.code, c.name, c.recDate, c.stock, c.board))
+		outputFile.write('%s^%s^%s^%s^%s\n' % (c.code, c.name, c.recDate, c.stock, c.board))
+	outputFile.close()
+
+	print('Successfully retrieved %d data' % len(companies))
+
+	input('Press enter to quit')
