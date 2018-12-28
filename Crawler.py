@@ -115,3 +115,6 @@ for i in range(7):
 	
 for c in companies:
 	print('%s^%s^%s^%s^%s' % (c.code, c.name, c.recDate, c.stock, c.board))
+	
+browser.quit()
+input('Press enter to quit')
