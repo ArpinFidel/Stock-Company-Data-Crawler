@@ -48,11 +48,19 @@ def get_company_data():
 	op.add_experimental_option("prefs", prefs)
 
 	op.add_argument('headless')
-	op.add_argument("--disable-notifications");
-
+	op.add_argument("--silent")
+	op.add_argument("--disable-gpu")
+	op.add_argument('--disable-notifications')
+	op.add_argument('--log-level=1')
+	op.add_argument("--disable-extensions");
+	op.add_argument("test-type")
+	
+	args = ['hide_console']
+	
+	
 	url = 'https://www.idx.co.id/data-pasar/data-saham/daftar-saham/'
 
-	browser = webdriver.Chrome(runPath+'\\lib\\chromedriver.exe',options=op)
+	browser = webdriver.Chrome(runPath+'\\lib\\chromedriver.exe',options=op, service_args=args)
 
 	browser.implicitly_wait(20)
 
@@ -73,8 +81,8 @@ def get_company_data():
 
 	for i in range(7):
 		
-		print('on page %d' % (i+1))
-		print('retrieved %d data'  % (len(companies)))
+		print('Currently on page %d' % i)
+		print('Retrieved %d data' % len(companies))
 		
 		tableTries = 0
 		while True:
@@ -126,16 +134,19 @@ def get_company_data():
 	return companies
 			
 if __name__ == '__main__':
-	print('Loading data from https://www.idx.co.id/data-pasar/data-saham/daftar-saham/')
+	try:
+		print('Loading data from https://www.idx.co.id/data-pasar/data-saham/daftar-saham/')
+		
+		companies = get_company_data()
 
-	companies = get_company_data()
+		outputFile = open('companies.txt','w+')
+		for c in companies:
+			print('%s^%s^%s^%s^%s' % (c.code, c.name, c.recDate, c.stock, c.board))
+			outputFile.write('%s^%s^%s^%s^%s\n' % (c.code, c.name, c.recDate, c.stock, c.board))
+		outputFile.close()
 
-	outputFile = open('companies.txt','w+')
-	for c in companies:
-		print('%s^%s^%s^%s^%s' % (c.code, c.name, c.recDate, c.stock, c.board))
-		outputFile.write('%s^%s^%s^%s^%s\n' % (c.code, c.name, c.recDate, c.stock, c.board))
-	outputFile.close()
+		print('Successfully retrieved %d data' % len(companies))
 
-	print('Successfully retrieved %d data' % len(companies))
-
-	input('Press enter to quit')
+		input('Press enter to quit')
+	except Exception as e:
+		input(e)
