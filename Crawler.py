@@ -74,9 +74,9 @@ def get_company_data():
 
 	time.sleep(5)
 	
-	tableTriesLimit = 20
+	tableTriesLimit = 50
 	rowTriesLimit = 10
-	nextTriesLimit = 20
+	nextTriesLimit = 30
 	
 
 	for i in range(7):
