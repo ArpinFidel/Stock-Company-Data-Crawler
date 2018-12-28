@@ -3,7 +3,7 @@ A simple script to get company data from idx.com
 
 
 When importing use this to silence get_company_data()
-
+```
 import io
 import contextlib
 import sys
@@ -19,3 +19,4 @@ def no_stdout():
 
 with no_stdout():
     ...
+```
